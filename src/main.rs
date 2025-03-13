@@ -1,16 +1,25 @@
-mod server;
-use std::io::{stdin, Read, Write};
+mod network;
+
+use std::io::{stdin, stdout, Write};
 use std::sync::mpsc;
 use std::sync::mpsc::Sender;
-use crate::server::server::{Server, ServerCommand};
+use crate::network::server::{Server, ServerCommand};
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    let port = &args[1];
+    print!("Enter the IP address e.g. <your-ip-address>:<port> \n");
+    std::io::stdout().flush().unwrap(); // Ensure the prompt is displayed immediately
+
+    let mut ip = String::new();
+    stdin().read_line(&mut ip).unwrap();
+    let mut ip = ip.trim().to_string();
+
+    if ip.is_empty() {
+        ip = String::from("127.0.0.1:5000");
+    }
+
+    let mut server = Server::new(ip.as_str());
 
     let (tx, rx) = mpsc::channel();
-    let mut server = Server::new(port);
-
     server.listen();
     server.read_messages();
     server.handle_commands(rx);
@@ -31,19 +40,19 @@ fn commands(sender: Sender<ServerCommand>) {
 
     match input.trim() {
         "1" => {
-            println!("Port: ");
-            let mut port = String::new();
-            stdin.read_line(&mut port).unwrap();
+            println!("Ip: ");
+            println!(">");
+            stdout().flush().unwrap();
+            let mut ip = String::new();
+            stdin.read_line(&mut ip).unwrap();
 
-            let port = port.trim();
-            if let Ok(_) = port.parse::<u16>() {
-                sender.send(ServerCommand::Connect(port.to_string())).unwrap();
-            } else {
-                println!("Invalid port input.");
-            }
+            let ip = ip.trim();
+            sender.send(ServerCommand::Connect(ip.to_string())).unwrap();
         }
         "2" => {
             println!("Type your message: ");
+            print!(">");
+            stdout().flush().unwrap();
 
             let mut message = String::new();
             stdin.read_line(&mut message).unwrap();
