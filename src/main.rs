@@ -31,6 +31,7 @@ fn main() {
 
 
 fn commands(sender: Sender<ServerCommand>) {
+    print!("\n");
     println!("1 - Connect");
     println!("2 - Send a message");
 
