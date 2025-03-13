@@ -7,7 +7,7 @@ use crate::network::server::{Server, ServerCommand};
 
 fn main() {
     print!("Enter the IP address e.g. <your-ip-address>:<port> \n");
-    std::io::stdout().flush().unwrap(); // Ensure the prompt is displayed immediately
+    stdout().flush().unwrap();
 
     let mut ip = String::new();
     stdin().read_line(&mut ip).unwrap();
@@ -18,8 +18,8 @@ fn main() {
     }
 
     let mut server = Server::new(ip.as_str());
-
     let (tx, rx) = mpsc::channel();
+
     server.listen();
     server.read_messages();
     server.handle_commands(rx);
@@ -41,7 +41,6 @@ fn commands(sender: Sender<ServerCommand>) {
     match input.trim() {
         "1" => {
             println!("Ip: ");
-            println!(">");
             stdout().flush().unwrap();
             let mut ip = String::new();
             stdin.read_line(&mut ip).unwrap();
@@ -51,7 +50,6 @@ fn commands(sender: Sender<ServerCommand>) {
         }
         "2" => {
             println!("Type your message: ");
-            print!(">");
             stdout().flush().unwrap();
 
             let mut message = String::new();

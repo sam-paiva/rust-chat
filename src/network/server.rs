@@ -16,7 +16,17 @@ pub struct Server {
 
 impl Server {
     pub fn new(ip: &str) -> Server {
-        let listener = TcpListener::bind(ip).unwrap();
+        let listener_result = TcpListener::bind(ip);
+
+        let listener = match listener_result {
+            Ok(listener) => {
+                listener
+            }
+            Err(err) => {
+                panic!("Can't listen on this IP address: {}. Err: {}", ip, err);
+            }
+        };
+
         println!("Listening on {}", ip);
         Server {
             listener: Arc::new(listener),
@@ -54,11 +64,18 @@ impl Server {
     }
 
     fn connect(mut clients: MutexGuard<Vec<Client>>, ip: &str) {
-        let stream = TcpStream::connect(ip).unwrap();
+        let stream_result = TcpStream::connect(ip);
 
-        let client = Client::new(stream.try_clone().unwrap());
-        clients.push(client);
-        println!("🆗 Connected successfully!");
+        match stream_result {
+            Ok(stream) => {
+                let client = Client::new(stream.try_clone().unwrap());
+                clients.push(client);
+                println!("🆗 Connected successfully!");
+            },
+            Err(err) => {
+                println!("Can't connect to the ip: {}. Err: {}", ip, err);
+            }
+        }
     }
 
     pub fn read_messages(&mut self)  {
